@@ -9,6 +9,10 @@ from torch.nn import functional as F
 from typing import Callable
 from torch import optim
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# if torch.backends.mps.is_available():
+#     print("MPS selected")
+#     device = torch.device("mps")
 
 class MLP(nn.Module):
     def __init__(self,
@@ -49,12 +53,12 @@ def setup_data():
     train_features, test_features, train_labels, test_labels = train_test_split(preprocessed_features, labels,
                                                                                 test_size=1 / 3)
     features = {
-        'train': torch.tensor(train_features, dtype=torch.float32),
-        'test': torch.tensor(test_features, dtype=torch.float32),
+        'train': torch.tensor(train_features, dtype=torch.float32).to(device),
+        'test': torch.tensor(test_features, dtype=torch.float32).to(device),
     }
     labels = {
-        'train': torch.tensor(train_labels, dtype=torch.long),
-        'test': torch.tensor(test_labels, dtype=torch.long),
+        'train': torch.tensor(train_labels, dtype=torch.long).to(device),
+        'test': torch.tensor(test_labels, dtype=torch.long).to(device),
     }
     return labels, features
 
@@ -66,6 +70,7 @@ hidden_layer_size = 100
 class_count = 3
 
 model = MLP(feature_count, hidden_layer_size, class_count)
+model.to(device)
 optimiser = optim.SGD(model.parameters(), lr=0.005)
 criterion = nn.CrossEntropyLoss()
 
